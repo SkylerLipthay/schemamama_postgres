@@ -1,0 +1,13 @@
+[package]
+name = "schemamama_postgres"
+version = "0.0.1"
+authors = ["Skyler Lipthay <skyler.lipthay@gmail.com>"]
+description = "PostgreSQL adapter for the Schemamama migration system"
+readme = "README.md"
+keywords = ["schemamama", "database", "migration", "postgresql"]
+license = "MIT"
+repository = "https://github.com/SkylerLipthay/schemamama_postgres"
+
+[dependencies]
+schemamama = "*"
+postgres = "0.8"
