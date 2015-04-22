@@ -2,6 +2,7 @@ extern crate schemamama;
 extern crate postgres;
 
 use schemamama::{Adapter, Migration, Version};
+use std::collections::BTreeSet;
 
 /// A migration to be used within a PostgreSQL connection.
 pub trait PostgresMigration : Migration {
@@ -79,6 +80,23 @@ impl<'a> Adapter for PostgresAdapter<'a> {
         };
 
         row.iter().next().map(|r| r.get(0))
+    }
+
+    /// Panics if `setup_schema` hasn't previously been called or if the query otherwise fails.
+    fn migrated_versions(&self) -> BTreeSet<Version> {
+        let query = "SELECT version FROM schemamama;";
+
+        let statement = match self.connection.prepare(query) {
+            Ok(s) => s,
+            Err(e) => panic!("Schema query preperation failed: {:?}", e)
+        };
+
+        let row = match statement.query(&[]) {
+            Ok(r) => r,
+            Err(e) => panic!("Schema query failed: {:?}", e)
+        };
+
+        row.iter().map(|r| r.get(0)).collect()
     }
 
     /// Panics if `setup_schema` hasn't previously been called or if the migration otherwise fails.
