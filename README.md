@@ -29,7 +29,7 @@ use schemamama::{Migration, Migrator};
 use schemamama_postgres::{PostgresAdapter, PostgresMigration};
 
 struct CreateUsers;
-// Instead of using sequential numbers (1, 2, 3...), you may instead choose to use a global
+// Instead of using sequential numbers (1, 2, 3...), you may choose to use a collaborative
 // versioning scheme, such as epoch timestamps.
 migration!(CreateUsers, 1, "create users table");
 
