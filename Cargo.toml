@@ -1,6 +1,6 @@
 [package]
 name = "schemamama_postgres"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Skyler Lipthay <skyler.lipthay@gmail.com>"]
 description = "PostgreSQL adapter for the Schemamama migration system"
 readme = "README.md"
@@ -10,4 +10,4 @@ repository = "https://github.com/SkylerLipthay/schemamama_postgres"
 
 [dependencies]
 schemamama = "*"
-postgres = "0.10"
+postgres = "0.11"

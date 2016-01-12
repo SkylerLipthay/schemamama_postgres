@@ -8,14 +8,15 @@ use schemamama_postgres::{PostgresAdapter, PostgresMigration};
 use postgres::{Connection, SslMode};
 
 fn make_database_connection() -> Connection {
-    let connection = Connection::connect("postgres://postgres@localhost", &SslMode::None).unwrap();
+    let connection = Connection::connect("postgres://postgres@localhost", SslMode::None).unwrap();
     connection.execute("SET search_path TO pg_temp;", &[]).unwrap();
     connection
 }
 
 fn current_schema_name(connection: &Connection) -> String {
-    connection.prepare("SELECT CURRENT_SCHEMA();").unwrap().query(&[]).unwrap().iter().next().
-        map(|r| r.get(0)).unwrap()
+    let query = connection.prepare("SELECT CURRENT_SCHEMA();").unwrap();
+    let result = query.query(&[]).unwrap();
+    result.iter().next().map(|r| r.get(0)).unwrap()
 }
 
 struct FirstMigration;
