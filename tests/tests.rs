@@ -6,6 +6,7 @@ extern crate postgres;
 use schemamama::Migrator;
 use schemamama_postgres::{PostgresAdapter, PostgresMigration};
 use postgres::{Connection, SslMode};
+use postgres::error::Error as PostgresError;
 
 fn make_database_connection() -> Connection {
     let connection = Connection::connect("postgres://postgres@localhost", SslMode::None).unwrap();
@@ -23,12 +24,12 @@ struct FirstMigration;
 migration!(FirstMigration, 10, "first migration");
 
 impl PostgresMigration for FirstMigration {
-    fn up(&self, transaction: &postgres::Transaction) {
-        transaction.execute("CREATE TABLE first (id BIGINT PRIMARY KEY);", &[]).unwrap();
+    fn up(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+        transaction.execute("CREATE TABLE first (id BIGINT PRIMARY KEY);", &[]).map(|_| ())
     }
 
-    fn down(&self, transaction: &postgres::Transaction) {
-        transaction.execute("DROP TABLE first;", &[]).unwrap();
+    fn down(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+        transaction.execute("DROP TABLE first;", &[]).map(|_| ())
     }
 }
 
@@ -47,7 +48,7 @@ fn test_setup() {
                  tablename = 'schemamama';";
 
     for _ in 0..2 {
-        adapter.setup_schema();
+        adapter.setup_schema().unwrap();
         assert_eq!(connection.execute(query, &[&schema_name]).unwrap(), 1);
     }
 }
@@ -56,15 +57,15 @@ fn test_setup() {
 fn test_migration_count() {
     let connection = make_database_connection();
     let adapter = PostgresAdapter::new(&connection);
-    adapter.setup_schema();
+    adapter.setup_schema().unwrap();
     let mut migrator = Migrator::new(adapter);
     migrator.register(Box::new(FirstMigration));
     migrator.register(Box::new(SecondMigration));
 
-    migrator.up(1337);
-    assert_eq!(migrator.current_version(), Some(20));
-    migrator.down(None);
-    assert_eq!(migrator.current_version(), None);
+    migrator.up(1337).unwrap();
+    assert_eq!(migrator.current_version().unwrap(), Some(20));
+    migrator.down(None).unwrap();
+    assert_eq!(migrator.current_version().unwrap(), None);
 }
 
 #[test]
@@ -72,15 +73,15 @@ fn test_migration_up_and_down() {
     let connection = make_database_connection();
     let schema_name = current_schema_name(&connection);
     let adapter = PostgresAdapter::new(&connection);
-    adapter.setup_schema();
+    adapter.setup_schema().unwrap();
     let mut migrator = Migrator::new(adapter);
     migrator.register(Box::new(FirstMigration));
 
-    migrator.up(10);
+    migrator.up(10).unwrap();
     let query = "SELECT * FROM pg_catalog.pg_tables WHERE schemaname = $1 AND \
                  tablename = 'first';";
     assert_eq!(connection.execute(query, &[&schema_name]).unwrap(), 1);
 
-    migrator.down(None);
+    migrator.down(None).unwrap();
     assert_eq!(connection.execute(query, &[&schema_name]).unwrap(), 0);
 }
