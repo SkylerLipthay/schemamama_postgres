@@ -23,13 +23,13 @@ pub trait PostgresMigration : Migration {
 }
 
 /// An adapter that allows its migrations to act upon PostgreSQL connection transactions.
-pub struct PostgresAdapter<'a, T: 'a + postgres::GenericConnection> {
-    connection: &'a T,
+pub struct PostgresAdapter<'a> {
+    connection: &'a postgres::GenericConnection,
 }
 
-impl<'a, T: 'a + postgres::GenericConnection> PostgresAdapter<'a, T> {
+impl<'a> PostgresAdapter<'a> {
     /// Create a new migrator tied to a PostgreSQL connection.
-    pub fn new(connection: &'a T) -> PostgresAdapter<'a, T> {
+    pub fn new(connection: &'a postgres::GenericConnection) -> PostgresAdapter<'a> {
         PostgresAdapter { connection: connection }
     }
 
@@ -51,7 +51,7 @@ impl<'a, T: 'a + postgres::GenericConnection> PostgresAdapter<'a, T> {
     }
 }
 
-impl<'a, T: 'a + postgres::GenericConnection> Adapter for PostgresAdapter<'a, T> {
+impl<'a> Adapter for PostgresAdapter<'a> {
     type MigrationType = PostgresMigration;
     type Error = PostgresError;
 
