@@ -34,12 +34,12 @@ struct CreateUsers;
 migration!(CreateUsers, 1, "create users table");
 
 impl PostgresMigration for CreateUsers {
-    fn up(&self, transaction: &postgres::Transaction) {
-        transaction.execute("CREATE TABLE users (id BIGINT PRIMARY KEY);", &[]).unwrap();
+    fn up(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+        transaction.execute("CREATE TABLE users (id BIGINT PRIMARY KEY);", &[])
     }
 
-    fn down(&self, transaction: &postgres::Transaction) {
-        transaction.execute("DROP TABLE users;", &[]).unwrap();
+    fn down(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+        transaction.execute("DROP TABLE users;", &[])
     }
 }
 
