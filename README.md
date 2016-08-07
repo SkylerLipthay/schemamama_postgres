@@ -35,11 +35,11 @@ migration!(CreateUsers, 1, "create users table");
 
 impl PostgresMigration for CreateUsers {
     fn up(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
-        transaction.execute("CREATE TABLE users (id BIGINT PRIMARY KEY);", &[])
+        transaction.execute("CREATE TABLE users (id BIGINT PRIMARY KEY);", &[]).map(|_| ())
     }
 
     fn down(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
-        transaction.execute("DROP TABLE users;", &[])
+        transaction.execute("DROP TABLE users;", &[]).map(|_| ())
     }
 }
 
