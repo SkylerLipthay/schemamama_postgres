@@ -62,7 +62,7 @@ fn test_migration_count() {
     migrator.register(Box::new(FirstMigration));
     migrator.register(Box::new(SecondMigration));
 
-    migrator.up(1337).unwrap();
+    migrator.up(Some(1337)).unwrap();
     assert_eq!(migrator.current_version().unwrap(), Some(20));
     migrator.down(None).unwrap();
     assert_eq!(migrator.current_version().unwrap(), None);
@@ -77,7 +77,7 @@ fn test_migration_up_and_down() {
     let mut migrator = Migrator::new(adapter);
     migrator.register(Box::new(FirstMigration));
 
-    migrator.up(10).unwrap();
+    migrator.up(Some(10)).unwrap();
     let query = "SELECT * FROM pg_catalog.pg_tables WHERE schemaname = $1 AND \
                  tablename = 'first';";
     assert_eq!(connection.execute(query, &[&schema_name]).unwrap(), 1);

@@ -66,8 +66,8 @@ let mut migrator = Migrator::new(adapter);
 migrator.register(Box::new(CreateUsers));
 migrator.register(Box::new(CreateProducts));
 
-// Execute migrations up to and including version 2:
-migrator.up(2);
+// Execute migrations all the way upwards:
+migrator.up(None);
 assert_eq!(migrator.current_version(), Some(2));
 
 // Reverse all migrations:
