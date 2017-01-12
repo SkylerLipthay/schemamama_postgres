@@ -5,11 +5,12 @@ extern crate postgres;
 
 use schemamama::Migrator;
 use schemamama_postgres::{PostgresAdapter, PostgresMigration};
-use postgres::{Connection, SslMode};
+use postgres::{Connection, TlsMode};
 use postgres::error::Error as PostgresError;
+use postgres::transaction::Transaction;
 
 fn make_database_connection() -> Connection {
-    let connection = Connection::connect("postgres://postgres@localhost", SslMode::None).unwrap();
+    let connection = Connection::connect("postgres://postgres@localhost", TlsMode::None).unwrap();
     connection.execute("SET search_path TO pg_temp;", &[]).unwrap();
     connection
 }
@@ -24,11 +25,11 @@ struct FirstMigration;
 migration!(FirstMigration, 10, "first migration");
 
 impl PostgresMigration for FirstMigration {
-    fn up(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+    fn up(&self, transaction: &Transaction) -> Result<(), PostgresError> {
         transaction.execute("CREATE TABLE first (id BIGINT PRIMARY KEY);", &[]).map(|_| ())
     }
 
-    fn down(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+    fn down(&self, transaction: &Transaction) -> Result<(), PostgresError> {
         transaction.execute("DROP TABLE first;", &[]).map(|_| ())
     }
 }

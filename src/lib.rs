@@ -2,6 +2,7 @@ extern crate schemamama;
 extern crate postgres;
 
 use postgres::error::Error as PostgresError;
+use postgres::transaction::Transaction;
 use schemamama::{Adapter, Migration, Version};
 use std::collections::BTreeSet;
 
@@ -10,14 +11,14 @@ pub trait PostgresMigration : Migration {
     /// Called when this migration is to be executed. This function has an empty body by default,
     /// so its implementation is optional.
     #[allow(unused_variables)]
-    fn up(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+    fn up(&self, transaction: &Transaction) -> Result<(), PostgresError> {
         Ok(())
     }
 
     /// Called when this migration is to be reversed. This function has an empty body by default,
     /// so its implementation is optional.
     #[allow(unused_variables)]
-    fn down(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+    fn down(&self, transaction: &Transaction) -> Result<(), PostgresError> {
         Ok(())
     }
 }
