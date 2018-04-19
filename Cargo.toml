@@ -9,5 +9,5 @@ license = "MIT"
 repository = "https://github.com/SkylerLipthay/schemamama_postgres"
 
 [dependencies]
-schemamama = ">=0.1, <=0.2"
-postgres = ">=0.13, <=0.15"
+schemamama = ">=0.1"
+postgres = ">=0.13"
