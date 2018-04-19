@@ -10,9 +10,9 @@ If you're using Cargo, just add Schemamama to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-schemamama = "0.1"
-schemamama_postgres = "0.1"
-postgres = "0.11"
+schemamama = "0.3"
+schemamama_postgres = "0.2"
+postgres = "0.15"
 ```
 
 ## Usage
