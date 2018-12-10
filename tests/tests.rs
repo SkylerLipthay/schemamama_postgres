@@ -55,6 +55,20 @@ fn test_setup() {
 }
 
 #[test]
+fn test_setup_with_custom_metadata_table() {
+    let connection = make_database_connection();
+    let schema_name = current_schema_name(&connection);
+    let adapter = PostgresAdapter::with_metadata_table(&connection, "__custom__");
+    let query = "SELECT * FROM pg_catalog.pg_tables WHERE schemaname = $1 AND \
+                 tablename = '__custom__';";
+
+    for _ in 0..2 {
+        adapter.setup_schema().unwrap();
+        assert_eq!(connection.execute(query, &[&schema_name]).unwrap(), 1);
+    }
+}
+
+#[test]
 fn test_migration_count() {
     let connection = make_database_connection();
     let adapter = PostgresAdapter::new(&connection);

@@ -26,29 +26,38 @@ pub trait PostgresMigration : Migration {
 /// An adapter that allows its migrations to act upon PostgreSQL connection transactions.
 pub struct PostgresAdapter<'a> {
     connection: &'a postgres::GenericConnection,
+    metadata_table: &'static str,
 }
 
 impl<'a> PostgresAdapter<'a> {
     /// Create a new migrator tied to a PostgreSQL connection.
     pub fn new(connection: &'a postgres::GenericConnection) -> PostgresAdapter<'a> {
-        PostgresAdapter { connection: connection }
+        Self::with_metadata_table(connection, "schemamama")
+    }
+
+    /// Create a new migrator tied to a PostgreSQL connection with custom metadata table name
+    pub fn with_metadata_table(
+        connection: &'a postgres::GenericConnection,
+        metadata_table: &'static str
+    ) -> PostgresAdapter<'a> {
+        PostgresAdapter {connection, metadata_table }
     }
 
     /// Create the tables Schemamama requires to keep track of schema state. If the tables already
     /// exist, this function has no operation.
     pub fn setup_schema(&self) -> Result<(), PostgresError> {
-        let query = "CREATE TABLE IF NOT EXISTS schemamama (version BIGINT PRIMARY KEY);";
-        self.connection.execute(query, &[]).map(|_| ())
+        let query = format!("CREATE TABLE IF NOT EXISTS {} (version BIGINT PRIMARY KEY);", self.metadata_table);
+        self.connection.execute(&query, &[]).map(|_| ())
     }
 
     fn record_version(&self, version: Version) -> Result<(), PostgresError> {
-        let query = "INSERT INTO schemamama (version) VALUES ($1);";
-        self.connection.execute(query, &[&version]).map(|_| ())
+        let query = format!("INSERT INTO {} (version) VALUES ($1);", self.metadata_table);
+        self.connection.execute(&query, &[&version]).map(|_| ())
     }
 
     fn erase_version(&self, version: Version) -> Result<(), PostgresError> {
-        let query = "DELETE FROM schemamama WHERE version = $1;";
-        self.connection.execute(query, &[&version]).map(|_| ())
+        let query = format!("DELETE FROM {} WHERE version = $1;", self.metadata_table);
+        self.connection.execute(&query, &[&version]).map(|_| ())
     }
 }
 
@@ -57,15 +66,15 @@ impl<'a> Adapter for PostgresAdapter<'a> {
     type Error = PostgresError;
 
     fn current_version(&self) -> Result<Option<Version>, PostgresError> {
-        let query = "SELECT version FROM schemamama ORDER BY version DESC LIMIT 1;";
-        let statement = try!(self.connection.prepare(query));
+        let query = format!("SELECT version FROM {} ORDER BY version DESC LIMIT 1;", self.metadata_table);
+        let statement = try!(self.connection.prepare(&query));
         let row = try!(statement.query(&[]));
         Ok(row.iter().next().map(|r| r.get(0)))
     }
 
     fn migrated_versions(&self) -> Result<BTreeSet<Version>, PostgresError> {
-        let query = "SELECT version FROM schemamama;";
-        let statement = try!(self.connection.prepare(query));
+        let query = format!("SELECT version FROM {};", self.metadata_table);
+        let statement = try!(self.connection.prepare(&query));
         let row = try!(statement.query(&[]));
         Ok(row.iter().map(|r| r.get(0)).collect())
     }
