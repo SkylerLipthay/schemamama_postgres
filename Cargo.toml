@@ -1,6 +1,6 @@
 [package]
 name = "schemamama_postgres"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Skyler Lipthay <skyler.lipthay@gmail.com>"]
 description = "PostgreSQL adapter for the Schemamama migration system"
 readme = "README.md"

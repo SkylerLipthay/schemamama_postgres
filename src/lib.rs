@@ -40,7 +40,7 @@ impl<'a> PostgresAdapter<'a> {
         connection: &'a postgres::GenericConnection,
         metadata_table: &'static str
     ) -> PostgresAdapter<'a> {
-        PostgresAdapter {connection, metadata_table }
+        PostgresAdapter { connection, metadata_table }
     }
 
     /// Create the tables Schemamama requires to keep track of schema state. If the tables already
