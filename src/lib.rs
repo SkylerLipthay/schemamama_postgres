@@ -65,21 +65,21 @@ impl<'a> Adapter for PostgresAdapter<'a> {
     type MigrationType = PostgresMigration;
     type Error = PostgresError;
 
-    fn current_version(&self) -> Result<Option<Version>, PostgresError> {
+    fn current_version(&mut self) -> Result<Option<Version>, PostgresError> {
         let query = format!("SELECT version FROM {} ORDER BY version DESC LIMIT 1;", self.metadata_table);
         let statement = try!(self.connection.prepare(&query));
         let row = try!(statement.query(&[]));
         Ok(row.iter().next().map(|r| r.get(0)))
     }
 
-    fn migrated_versions(&self) -> Result<BTreeSet<Version>, PostgresError> {
+    fn migrated_versions(&mut self) -> Result<BTreeSet<Version>, PostgresError> {
         let query = format!("SELECT version FROM {};", self.metadata_table);
         let statement = try!(self.connection.prepare(&query));
         let row = try!(statement.query(&[]));
         Ok(row.iter().map(|r| r.get(0)).collect())
     }
 
-    fn apply_migration(&self, migration: &PostgresMigration) -> Result<(), PostgresError> {
+    fn apply_migration(&mut self, migration: &PostgresMigration) -> Result<(), PostgresError> {
         let transaction = try!(self.connection.transaction());
         try!(migration.up(&transaction));
         try!(self.record_version(migration.version()));
@@ -87,7 +87,7 @@ impl<'a> Adapter for PostgresAdapter<'a> {
         Ok(())
     }
 
-    fn revert_migration(&self, migration: &PostgresMigration) -> Result<(), PostgresError> {
+    fn revert_migration(&mut self, migration: &PostgresMigration) -> Result<(), PostgresError> {
         let transaction = try!(self.connection.transaction());
         try!(migration.down(&transaction));
         try!(self.erase_version(migration.version()));
