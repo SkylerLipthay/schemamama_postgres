@@ -10,4 +10,4 @@ repository = "https://github.com/SkylerLipthay/schemamama_postgres"
 
 [dependencies]
 schemamama = ">=0.1"
-postgres = ">=0.13"
+postgres = ">=0.13, <=0.15"
