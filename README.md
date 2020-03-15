@@ -1,8 +1,6 @@
 # PostgreSQL for Schemamama
 
-A PostgreSQL adapter for the lightweight database migration system
-[Schemamama](https://github.com/SkylerLipthay/schemamama). Depends on the
-`postgres` crate.
+A PostgreSQL adapter for the lightweight database migration system [Schemamama](https://github.com/SkylerLipthay/schemamama). Depends on the `postgres` crate.
 
 ## Installation
 
@@ -11,8 +9,8 @@ If you're using Cargo, just add Schemamama to your `Cargo.toml`:
 ```toml
 [dependencies]
 schemamama = "0.3"
-schemamama_postgres = "0.2"
-postgres = "0.15"
+schemamama_postgres = "0.3"
+postgres = "0.17"
 ```
 
 ## Usage
@@ -25,6 +23,7 @@ extern crate schemamama;
 extern crate schemamama_postgres;
 extern crate postgres;
 
+use postgres::{Client, Transaction, error::Error as PostgresError, NoTls};
 use schemamama::{Migration, Migrator};
 use schemamama_postgres::{PostgresAdapter, PostgresMigration};
 
@@ -34,11 +33,11 @@ struct CreateUsers;
 migration!(CreateUsers, 1, "create users table");
 
 impl PostgresMigration for CreateUsers {
-    fn up(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+    fn up(&self, transaction: &mut Transaction) -> Result<(), PostgresError> {
         transaction.execute("CREATE TABLE users (id BIGINT PRIMARY KEY);", &[]).map(|_| ())
     }
 
-    fn down(&self, transaction: &postgres::Transaction) -> Result<(), PostgresError> {
+    fn down(&self, transaction: &mut Transaction) -> Result<(), PostgresError> {
         transaction.execute("DROP TABLE users;", &[]).map(|_| ())
     }
 }
@@ -55,11 +54,11 @@ Then, run the migrations!
 
 ```rust
 let url = "postgres://postgres@localhost";
-let connection = postgres::Connection::connect(url, &SslMode::None).unwrap();
-let adapter = PostgresAdapter::new(&connection);
+let client = Client::connect(url, NoTls).unwrap();
+let adapter = PostgresAdapter::new(&mut client);
 // Create the metadata tables necessary for tracking migrations. This is safe to call more than
 // once (`CREATE TABLE IF NOT EXISTS schemamama` is used internally):
-adapter.setup_schema();
+adapter.setup_schema().unwrap();
 
 let mut migrator = Migrator::new(adapter);
 
@@ -77,10 +76,4 @@ assert_eq!(migrator.current_version(), None);
 
 ## Testing
 
-To run `cargo test`, you must have PostgreSQL running locally with a user role
-named `postgres` with login access to a database named `postgres`. All tests
-will work in the `pg_temp` schema, so the database will not be modified.
-
-## To-do
-
-* Make metadata table name configurable (currently locked in to `schemamama`).
+To run `cargo test`, you must have PostgreSQL running locally with a user role named `postgres` with login access to a database named `postgres`. All tests will work in the `pg_temp` schema, so the database will not be modified.
